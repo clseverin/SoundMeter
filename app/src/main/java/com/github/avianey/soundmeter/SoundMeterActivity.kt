@@ -3,7 +3,6 @@ package com.github.avianey.soundmeter
 import android.Manifest
 import android.content.pm.PackageManager
 import android.location.Criteria
-import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Bundle
@@ -11,7 +10,6 @@ import android.os.Looper
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import java.util.*
 
 class SoundMeterActivity: AppCompatActivity() {
 
@@ -26,10 +24,12 @@ class SoundMeterActivity: AppCompatActivity() {
     private var popupAlreadyDisplayed = false
     private var locationManager: LocationManager? = null
 
-    private lateinit var latitudeView: TextView
+    private lateinit var coordinatesView: TextView
 
     private var locationListener = LocationListener { location ->
-        // TODO
+        coordinatesView.text = getString(R.string.sample_template_string,
+                String.format("%.6f", location.latitude),
+                String.format("%.6f", location.longitude))
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -43,7 +43,7 @@ class SoundMeterActivity: AppCompatActivity() {
             })
         })*/
         popupAlreadyDisplayed = savedInstanceState?.getBoolean(POPUP_DISPLAYED) ?: false
-        latitudeView = findViewById(R.id.latitude)
+        coordinatesView = findViewById(R.id.coordinates)
     }
 
     override fun onStart() {
@@ -68,7 +68,7 @@ class SoundMeterActivity: AppCompatActivity() {
                 LOCATION_UPDATE_MS,
                 LOCATION_UPDATE_RADIUS,
                 Criteria().apply {
-                    horizontalAccuracy = Criteria.ACCURACY_MEDIUM
+                     accuracy = Criteria.ACCURACY_FINE
                 }, locationListener, Looper.myLooper())
         }
     }
