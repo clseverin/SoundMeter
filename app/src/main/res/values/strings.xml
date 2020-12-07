@@ -4,4 +4,6 @@
     <string name="permission_popup_msg">SoundMeter requires access to your phone\'s microphone in order to display the sound level.</string>
     <string name="permission_popup_ok">Ok</string>
     <string name="permission_popup_ko">Not yet</string>
+
+    <string name="sample_template_string">lat : %1$s - lng : %2$s</string>
 </resources>
