@@ -6,3 +6,4 @@
 
 - https://developer.android.com/reference/android/app/Activity
 - https://developer.android.com/reference/android/view/ViewGroup
+- https://developer.android.com/reference/android/app/Fragment
