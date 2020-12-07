@@ -2,9 +2,16 @@ package com.github.avianey.soundmeter
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.location.Criteria
+import android.location.Location
+import android.location.LocationListener
+import android.location.LocationManager
 import android.os.Bundle
+import android.os.Looper
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import java.util.*
 
 class SoundMeterActivity: AppCompatActivity() {
 
@@ -12,9 +19,18 @@ class SoundMeterActivity: AppCompatActivity() {
         const val POPUP_DISPLAYED = "popupAlreadyDisplayed"
         const val TAG_PERMISSION_FRAGMENT = "permissionDialogFragment"
         const val REQUEST_CODE_PERMISSION = 1
+        const val LOCATION_UPDATE_MS = 10_000L
+        const val LOCATION_UPDATE_RADIUS = 100f
     }
 
     private var popupAlreadyDisplayed = false
+    private var locationManager: LocationManager? = null
+
+    private lateinit var latitudeView: TextView
+
+    private var locationListener = LocationListener { location ->
+        // TODO
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,11 +43,16 @@ class SoundMeterActivity: AppCompatActivity() {
             })
         })*/
         popupAlreadyDisplayed = savedInstanceState?.getBoolean(POPUP_DISPLAYED) ?: false
+        latitudeView = findViewById(R.id.latitude)
+    }
+
+    override fun onStart() {
+        super.onStart()
     }
 
     override fun onResume() {
         super.onResume()
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
             != PackageManager.PERMISSION_GRANTED) {
             if (supportFragmentManager.findFragmentByTag(TAG_PERMISSION_FRAGMENT) == null
                 && !popupAlreadyDisplayed) {
@@ -41,8 +62,20 @@ class SoundMeterActivity: AppCompatActivity() {
                     .commit()
                 popupAlreadyDisplayed = true
             }
+        } else {
+            locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
+            locationManager?.requestLocationUpdates(
+                LOCATION_UPDATE_MS,
+                LOCATION_UPDATE_RADIUS,
+                Criteria().apply {
+                    horizontalAccuracy = Criteria.ACCURACY_MEDIUM
+                }, locationListener, Looper.myLooper())
         }
+    }
 
+    override fun onPause() {
+        super.onPause()
+        locationManager?.removeUpdates(locationListener)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
