@@ -3,13 +3,26 @@
     package="com.github.avianey.soundmeter">
 
     <application
+<<<<<<< HEAD
         android:name="SoundMeterApplication"
+=======
+        android:name=".SoundMeterApplication"
+>>>>>>> 8358e2c366456754e770287e35af2b6d7a2bd0a5
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.SoundMeter" />
+        android:theme="@style/Theme.SoundMeter" >
+
+        <activity android:name=".SoundMeterActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+
+    </application>
 
         <activity android:name=".SoundMeterActivity">
             <intent-filter>
