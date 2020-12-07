@@ -15,7 +15,11 @@ class PermissionPopupFragment: DialogFragment() {
             .setTitle(R.string.permission_popup_title)
             .setMessage(R.string.permission_popup_msg)
             .setPositiveButton(R.string.permission_popup_ok) { _, _ ->
-                ActivityCompat.requestPermissions(requireActivity(), arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), REQUEST_CODE_PERMISSION)
+                ActivityCompat.requestPermissions(requireActivity(),
+                    arrayOf(
+                        Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION),
+                    REQUEST_CODE_PERMISSION)
             }
             .setNegativeButton(R.string.permission_popup_ko) { _, _ ->
 
