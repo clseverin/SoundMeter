@@ -20,4 +20,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
 
+    <fragment
+        android:id="@+id/graph_fragment"
+        android:name="com.github.avianey.soundmeter.GraphFragment"
+        android:layout_width="match_parent"
+        android:layout_height="0dip"
+        android:layout_weight="1"/>
+
 </LinearLayout>
