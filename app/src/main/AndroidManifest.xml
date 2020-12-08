@@ -2,11 +2,15 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.github.avianey.soundmeter">
 
+    <!-- Android 11 (aka sdk 30) : only way to get location updates from manager when app is not foreground -->
+    <!-- Should request this using a second permission popup (after requesting ACCESS_FINE_LOCATION -->
+    <!-- Or ask user to go to settings to turn it on -->
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"/>
+
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.VIBRATE"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
-
 
     <application
         android:name=".SoundMeterApplication"

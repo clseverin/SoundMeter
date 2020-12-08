@@ -1,19 +1,18 @@
 package com.github.avianey.soundmeter
 
+import android.Manifest.permission.ACCESS_BACKGROUND_LOCATION
 import android.Manifest.permission.ACCESS_FINE_LOCATION
 import android.content.Intent
 import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.location.Location
 import android.os.Bundle
-import android.os.Vibrator
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Button
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import androidx.preference.PreferenceManager
+import com.github.avianey.soundmeter.SoundMeterApplication.Companion.serviceStateObservable
 import io.reactivex.disposables.Disposable
 import io.reactivex.functions.Consumer
 
@@ -33,7 +32,8 @@ class SoundMeterActivity: AppCompatActivity() {
     private lateinit var coordinatesView: TextView
     private lateinit var speedView: TextView
 
-    val locationConsumer = Consumer<Location> { location ->
+    private val serviceStateConsumer = Consumer<LocationService.State> { syncUI() }
+    private val locationConsumer = Consumer<Location> { location ->
         coordinatesView.text = getString(R.string.location_template,
             String.format("%.6f", location.latitude),
             String.format("%.6f", location.longitude))
@@ -48,7 +48,8 @@ class SoundMeterActivity: AppCompatActivity() {
          */
     }
 
-    var locationDisposable: Disposable? = null
+    private var locationDisposable: Disposable? = null
+    private var serviceStateDisposable: Disposable? = null
 
     // region lifecycle
 
@@ -84,18 +85,33 @@ class SoundMeterActivity: AppCompatActivity() {
                 popupAlreadyDisplayed = true
             }
         }
-        syncUI()
+        serviceStateDisposable = serviceStateObservable.subscribe(serviceStateConsumer)
         locationDisposable = LocationService.locationObservable.subscribe(locationConsumer)
     }
 
     override fun onPause() {
         super.onPause()
+        serviceStateDisposable?.dispose()
         locationDisposable?.dispose()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putBoolean(POPUP_DISPLAYED, popupAlreadyDisplayed)
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == REQUEST_CODE_PERMISSION) {
+            if (ActivityCompat.checkSelfPermission(this, ACCESS_FINE_LOCATION) == PERMISSION_GRANTED) {
+                if (ActivityCompat.checkSelfPermission(this, ACCESS_BACKGROUND_LOCATION) != PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(this, arrayOf(ACCESS_BACKGROUND_LOCATION), REQUEST_CODE_PERMISSION)
+                }
+            }
+        }
     }
 
     // endregion
@@ -120,10 +136,9 @@ class SoundMeterActivity: AppCompatActivity() {
     // endregion
 
     private fun syncUI() {
-        if (LocationService.isRunning) {
-            startStopBtn.text = getString(R.string.btn_stop)
-        } else {
-            startStopBtn.text = getString(R.string.btn_start)
+        startStopBtn.text = when (serviceStateObservable.value!!) {
+            LocationService.State.IDLE -> getString(R.string.btn_start)
+            LocationService.State.RUNNING -> getString(R.string.btn_stop)
         }
         startStopBtn.isEnabled =
                 ActivityCompat.checkSelfPermission(this, ACCESS_FINE_LOCATION) == PERMISSION_GRANTED

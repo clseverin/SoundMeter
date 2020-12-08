@@ -3,11 +3,14 @@ package com.github.avianey.soundmeter
 import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import io.reactivex.subjects.BehaviorSubject
 
 class SoundMeterApplication: Application() {
 
     companion object {
         const val NOTIFICATION_CHANNEL = "service"
+
+        val serviceStateObservable = BehaviorSubject.createDefault(LocationService.State.IDLE)
     }
 
     override fun onCreate() {

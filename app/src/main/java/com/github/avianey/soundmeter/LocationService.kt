@@ -9,13 +9,20 @@ import android.location.Criteria
 import android.location.Location
 import android.location.LocationManager
 import android.os.IBinder
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.preference.PreferenceManager
 import io.reactivex.subjects.BehaviorSubject
 
 class LocationService: Service() {
 
+    enum class State {
+        IDLE, RUNNING
+    }
+
     companion object {
+        private val TAG = LocationService::class.java.simpleName
+
         const val LOCATION_ACTION = "com.github.avianey.soundmeter.LOCATION_ACTION"
         val EMPTY_LOCATION = Location("")
         const val NOTIFICATION_TAG_SPEED_THRESHOLD = "123"
@@ -23,16 +30,12 @@ class LocationService: Service() {
 
         fun startOrStop(context: Context) {
             Intent(context, LocationService::class.java).let { intent ->
-                if (isRunning) {
-                    context.stopService(intent)
-                } else {
-                    context.startService(intent)
+                when (SoundMeterApplication.serviceStateObservable.value!!) {
+                    State.IDLE -> context.startService(intent)
+                    State.RUNNING -> context.stopService(intent)
                 }
             }
         }
-
-        var isRunning = false
-            private set
 
         var locationObservable = BehaviorSubject.createDefault(EMPTY_LOCATION)
     }
@@ -65,18 +68,20 @@ class LocationService: Service() {
         registerReceivers()
         requestLocationUpdates()
         startForeground(42, getPersistentNotification())
-        isRunning = true
+        SoundMeterApplication.serviceStateObservable.onNext(State.RUNNING)
         PreferenceManager.getDefaultSharedPreferences(this)
             .registerOnSharedPreferenceChangeListener(speedThresholdListener)
+        Log.d(TAG, "Service started")
         return START_STICKY
     }
 
     override fun onDestroy() {
+        Log.d(TAG, "Destroying service")
         super.onDestroy()
         stopLocationUpdates()
         unregisterReceivers()
         stopForeground(true)
-        isRunning = false
+        SoundMeterApplication.serviceStateObservable.onNext(State.IDLE)
         PreferenceManager.getDefaultSharedPreferences(this)
             .unregisterOnSharedPreferenceChangeListener(speedThresholdListener)
     }
@@ -126,6 +131,7 @@ class LocationService: Service() {
     private inner class LocationBroadcastReceiver: BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent?) {
             intent?.extras?.getParcelable<Location>(LocationManager.KEY_LOCATION_CHANGED)?.let { location ->
+                Log.d(TAG, "Location received : $location")
                 locationObservable.onNext(location)
                 checkSpeed(context, location)
             }
@@ -133,6 +139,7 @@ class LocationService: Service() {
     }
 
     private fun checkSpeed(context: Context, location: Location) {
+
         val threshold =
             PreferenceManager.getDefaultSharedPreferences(context)
                 .getInt(
