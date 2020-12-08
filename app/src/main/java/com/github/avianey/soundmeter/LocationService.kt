@@ -8,11 +8,17 @@ import android.content.*
 import android.location.Criteria
 import android.location.Location
 import android.location.LocationManager
+import android.os.AsyncTask
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.preference.PreferenceManager
+import io.reactivex.Observable
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.BehaviorSubject
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.withContext
 
 class LocationService: Service() {
 
@@ -134,6 +140,23 @@ class LocationService: Service() {
                 Log.d(TAG, "Location received : $location")
                 locationObservable.onNext(location)
                 checkSpeed(context, location)
+
+                // coroutine
+                // rx
+                // thread
+                // asynctask
+                Observable
+                    .fromCallable {
+                        SoundMeterApplication.db.locationDao().insert(
+                            LocationEntity(
+                                lat = location.latitude,
+                                lng = location.longitude,
+                                speed = location.speed.toDouble()
+                            ))
+                    }
+                    .subscribeOn(Schedulers.computation())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe { }
             }
         }
     }
