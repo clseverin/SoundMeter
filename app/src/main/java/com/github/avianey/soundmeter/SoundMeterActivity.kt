@@ -1,14 +1,10 @@
 package com.github.avianey.soundmeter
 
 import android.Manifest.permission.ACCESS_FINE_LOCATION
-import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.pm.PackageManager.PERMISSION_GRANTED
-import android.location.Criteria
-import android.location.LocationListener
-import android.location.LocationManager
+import android.location.Location
 import android.os.Bundle
-import android.os.Looper
 import android.os.Vibrator
 import android.view.Menu
 import android.view.MenuItem
@@ -18,6 +14,8 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.preference.PreferenceManager
+import io.reactivex.disposables.Disposable
+import io.reactivex.functions.Consumer
 
 class SoundMeterActivity: AppCompatActivity() {
 
@@ -35,7 +33,7 @@ class SoundMeterActivity: AppCompatActivity() {
     private lateinit var coordinatesView: TextView
     private lateinit var speedView: TextView
 
-    private var locationListener = LocationListener { location ->
+    val locationConsumer = Consumer<Location> { location ->
         coordinatesView.text = getString(R.string.location_template,
             String.format("%.6f", location.latitude),
             String.format("%.6f", location.longitude))
@@ -57,9 +55,11 @@ class SoundMeterActivity: AppCompatActivity() {
             (getSystemService(VIBRATOR_SERVICE) as Vibrator).apply {
                 vibrate(500)
             }
-            Toast.makeText(this@SoundMeterActivity, "vibrate", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "vibrate", Toast.LENGTH_SHORT).show()
         }
     }
+
+    var locationDisposable: Disposable? = null
 
     // region lifecycle
 
@@ -83,10 +83,6 @@ class SoundMeterActivity: AppCompatActivity() {
         speedView = findViewById(R.id.speed)
     }
 
-    override fun onStart() {
-        super.onStart()
-    }
-
     override fun onResume() {
         super.onResume()
         if (ActivityCompat.checkSelfPermission(this, ACCESS_FINE_LOCATION) != PERMISSION_GRANTED) {
@@ -100,6 +96,12 @@ class SoundMeterActivity: AppCompatActivity() {
             }
         }
         syncUI()
+        locationDisposable = LocationService.locationObservable.subscribe(locationConsumer)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        locationDisposable?.dispose()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
