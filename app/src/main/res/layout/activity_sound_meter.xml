@@ -15,15 +15,16 @@
         android:layout_height="wrap_content"/>
 
     <Button
-        android:id="@+id/open_settings"
-        android:text="@string/btn_settings"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
-
-    <Button
         android:id="@+id/start"
         android:text="@string/btn_start"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
+
+    <fragment
+        android:id="@+id/graph_fragment"
+        android:name="com.github.avianey.soundmeter.GraphFragment"
+        android:layout_width="match_parent"
+        android:layout_height="0dip"
+        android:layout_weight="1"/>
 
 </LinearLayout>

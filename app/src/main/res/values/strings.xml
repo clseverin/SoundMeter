@@ -11,7 +11,10 @@
     <string name="setting_speed">Speed threshold</string>
     <string name="setting_speed_summary">Vibrate when speed is reached</string>
 
-    <string name="btn_settings">Open settings</string>
+    <string name="menu_settings">Open settings</string>
     <string name="btn_start">Start</string>
     <string name="btn_stop">Stop</string>
+
+    <string name="notification_title">You\'re tracked</string>
+    <string name="notification_speed_title">You overpass the limit %1$s > %2$s</string>
 </resources>
