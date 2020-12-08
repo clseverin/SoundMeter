@@ -10,6 +10,8 @@ import android.location.LocationManager
 import android.os.Bundle
 import android.os.Looper
 import android.os.Vibrator
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
@@ -28,7 +30,6 @@ class SoundMeterActivity: AppCompatActivity() {
     }
 
     private var popupAlreadyDisplayed = false
-    private var locationManager: LocationManager? = null
 
     private lateinit var startStopBtn: Button
     private lateinit var coordinatesView: TextView
@@ -60,6 +61,7 @@ class SoundMeterActivity: AppCompatActivity() {
         }
     }
 
+    // region lifecycle
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -71,12 +73,10 @@ class SoundMeterActivity: AppCompatActivity() {
                 setImageResource(R.mipmap.ic_launcher)
             })
         })*/
-        findViewById<Button>(R.id.open_settings).setOnClickListener {
-            startActivity(Intent(this, SoundMeterSettings::class.java))
-        }
-        startStopBtn = findViewById<Button>(R.id.start)
+        startStopBtn = findViewById(R.id.start)
         startStopBtn.setOnClickListener {
-            startOrStop()
+            LocationService.startOrStop(this)
+            syncUI() // TODO
         }
         popupAlreadyDisplayed = savedInstanceState?.getBoolean(POPUP_DISPLAYED) ?: false
         coordinatesView = findViewById(R.id.coordinates)
@@ -100,14 +100,6 @@ class SoundMeterActivity: AppCompatActivity() {
             }
         }
         syncUI()
-        startStopBtn.isEnabled =
-            ActivityCompat.checkSelfPermission(this, ACCESS_FINE_LOCATION) == PERMISSION_GRANTED
-    }
-
-    override fun onPause() {
-        super.onPause()
-        locationManager?.removeUpdates(locationListener)
-        locationManager = null
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -115,31 +107,35 @@ class SoundMeterActivity: AppCompatActivity() {
         outState.putBoolean(POPUP_DISPLAYED, popupAlreadyDisplayed)
     }
 
+    // endregion
 
-    @SuppressLint("MissingPermission")
-    private fun startOrStop() {
-        if (locationManager == null) {
-            locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
-            locationManager?.requestLocationUpdates(
-                LOCATION_UPDATE_MS,
-                LOCATION_UPDATE_RADIUS,
-                Criteria().apply {
-                    accuracy = Criteria.ACCURACY_FINE
-                }, locationListener, Looper.myLooper()
-            )
-        } else {
-            locationManager?.removeUpdates(locationListener)
-            locationManager = null
-        }
-        syncUI()
+    // region menu
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.activity_sound_meter, menu)
+        return super.onCreateOptionsMenu(menu)
     }
 
-    private fun syncUI() {
-        if (locationManager == null) {
-            startStopBtn.text = getString(R.string.btn_start)
-        } else {
-            startStopBtn.text = getString(R.string.btn_stop)
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.open_settings -> {
+                startActivity(Intent(this, SoundMeterSettings::class.java))
+                return true
+            }
         }
+        return super.onOptionsItemSelected(item)
+    }
+
+    // endregion
+
+    private fun syncUI() {
+        if (LocationService.isRunning) {
+            startStopBtn.text = getString(R.string.btn_stop)
+        } else {
+            startStopBtn.text = getString(R.string.btn_start)
+        }
+        startStopBtn.isEnabled =
+                ActivityCompat.checkSelfPermission(this, ACCESS_FINE_LOCATION) == PERMISSION_GRANTED
     }
 
 }
