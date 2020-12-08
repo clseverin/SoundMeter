@@ -46,17 +46,6 @@ class SoundMeterActivity: AppCompatActivity() {
             .putInt(SoundMeterSettings.SETTING_SPEED, 60)
             .apply()
          */
-
-        val threshold =
-            PreferenceManager.getDefaultSharedPreferences(this)
-                .getInt(SoundMeterSettings.SETTING_SPEED, resources.getInteger(R.integer.speed_default))
-        if (location.speed > threshold) {
-            // threshold reached
-            (getSystemService(VIBRATOR_SERVICE) as Vibrator).apply {
-                vibrate(500)
-            }
-            Toast.makeText(this, "vibrate", Toast.LENGTH_SHORT).show()
-        }
     }
 
     var locationDisposable: Disposable? = null

@@ -16,4 +16,5 @@
     <string name="btn_stop">Stop</string>
 
     <string name="notification_title">You\'re tracked</string>
+    <string name="notification_speed_title">You overpass the limit %1$s > %2$s</string>
 </resources>

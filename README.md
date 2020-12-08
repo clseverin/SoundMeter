@@ -10,6 +10,7 @@
 - https://developer.android.com/reference/android/location/LocationManager
 - https://developer.android.com/guide/topics/ui/settings
 - https://developer.android.com/guide/topics/ui/menus
+- https://developer.android.com/jetpack/androidx/releases/room
 
 ### Pour approfondir
 
